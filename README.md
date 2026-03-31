@@ -75,12 +75,12 @@ Screenshots demonstrating Google Gemini integration are provided in the `/proof`
 ### Screenshots
 
 **Screenshot 1: Dashboard Connection State**
-![Screenshot1](proof/screenshot1.png)
+![Screenshot1](proof/screenshot2.png)
 - Shows the initial dashboard state waiting for WhatsApp QR authentication
 - Displays all metric cards and layout
 
 **Screenshot 2: Live Scam Detection in Action**
-![Screenshot2](proof/screenshot2.png)
+![Screenshot2](proof/screenshot1.png)
 - Live dashboard with 7 messages scanned (29% scam rate, average risk 31/100)
 - **Scam Alert Examples**:
   - High-risk OTP/account threat (Risk 95/100) detected by Gemini
