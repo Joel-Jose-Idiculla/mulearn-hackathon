@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI WhatsApp Bodyguard</title>
+    <style>
+      :root {
+        --bg: #070b13;
+        --card: #0f1729;
+        --card-2: #121f34;
+        --text: #eaf1ff;
+        --muted: #8fa5ca;
+        --accent: #32d296;
+        --safe: #52d8ff;
+        --warn: #ffcb57;
+        --danger: #ff6b6b;
+        --border: #24324a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+        position: relative;
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 10% -20%, rgba(80, 145, 255, 0.22), transparent 35%),
+          radial-gradient(circle at 100% 0%, rgba(55, 219, 164, 0.16), transparent 30%),
+          var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        filter: blur(65px);
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.22;
+      }
+
+      body::before {
+        background: #2f78ff;
+        top: -120px;
+        right: -80px;
+        animation: driftA 12s ease-in-out infinite;
+      }
+
+      body::after {
+        background: #27d495;
+        bottom: -120px;
+        left: -90px;
+        animation: driftB 14s ease-in-out infinite;
+      }
+
+      @keyframes driftA {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(-35px, 40px) scale(1.08); }
+      }
+
+      @keyframes driftB {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(45px, -30px) scale(1.06); }
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 32px;
+        letter-spacing: 0.3px;
+      }
+
+      .subtitle {
+        margin-top: 6px;
+        color: var(--muted);
+      }
+
+      .status-bar {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(25, 38, 62, 0.95), rgba(15, 24, 42, 0.95));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .status-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .live-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 0 rgba(50, 210, 150, 0.8);
+        animation: pulse 1.8s infinite;
+      }
+
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(50, 210, 150, 0.8); }
+        100% { box-shadow: 0 0 0 12px rgba(50, 210, 150, 0); }
+      }
+
+      .counter {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        border: 1px solid transparent;
+      }
+
+      .pill.offline {
+        color: #ffd37e;
+        background: rgba(255, 203, 87, 0.15);
+        border-color: rgba(255, 203, 87, 0.4);
+      }
+
+      .pill.online {
+        color: #6ff0b8;
+        background: rgba(47, 211, 138, 0.15);
+        border-color: rgba(47, 211, 138, 0.45);
+      }
+
+      .grid {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 16px;
+      }
+
+      .stats-row {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .stat-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, rgba(14, 24, 42, 0.95), rgba(10, 18, 33, 0.92));
+      }
+
+      .stat-label {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .stat-value {
+        margin: 4px 0 0;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .feed-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      }
+
+      .card h2 {
+        margin: 0;
+        padding: 16px 16px 0;
+        font-size: 18px;
+      }
+
+      .qr-wrap {
+        padding: 16px;
+        min-height: 290px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .qr-placeholder {
+        color: var(--muted);
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      #qrImage {
+        max-width: 100%;
+        width: 280px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: #fff;
+        display: none;
+      }
+
+      .logs {
+        padding: 10px 14px 14px;
+      }
+
+      .log-head {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 10px;
+      }
+
+      .log-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 500px;
+        overflow: auto;
+      }
+
+      .log-item {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(10, 14, 20, 0.65);
+        animation: revealUp 0.3s ease;
+      }
+
+      @keyframes revealUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .log-item.scam {
+        border-color: rgba(255, 107, 107, 0.45);
+        box-shadow: inset 0 0 0 1px rgba(255, 107, 107, 0.2);
+      }
+
+      .log-item.safe {
+        border-color: rgba(82, 216, 255, 0.35);
+      }
+
+      .line1 {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .risk {
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+
+      .risk.low {
+        color: #6ff0b8;
+        background: rgba(47, 211, 138, 0.15);
+      }
+
+      .risk.medium {
+        color: #ffd37e;
+        background: rgba(255, 203, 87, 0.16);
+      }
+
+      .risk.high {
+        color: #ff9d9d;
+        background: rgba(255, 107, 107, 0.16);
+      }
+
+      .source {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .msg {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.35;
+      }
+
+      .reason {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .feed-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">AI WhatsApp Bodyguard</h1>
+      <p class="subtitle">Real-time scam detection powered by Gemini Flash</p>
+
+      <div class="status-bar">
+        <div id="statusText">Waiting for QR...</div>
+        <div class="status-meta">
+          <div class="live-dot" id="liveDot"></div>
+          <div id="messageCounters" class="counter">Scams: 0 | Safe: 0</div>
+          <span id="statusPill" class="pill offline">Not Connected</span>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <article class="stat-card">
+          <p class="stat-label">Messages Scanned</p>
+          <p class="stat-value" id="totalCount">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Scam Rate</p>
+          <p class="stat-value" id="scamRate">0%</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Average Risk</p>
+          <p class="stat-value" id="avgRisk">0</p>
+        </article>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Scan this QR to Start</h2>
+          <div class="qr-wrap">
+            <img id="qrImage" alt="WhatsApp Login QR" />
+            <div id="qrPlaceholder" class="qr-placeholder">
+              QR code will appear here when WhatsApp requests login.
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="feed-grid">
+            <article class="card">
+              <h2>Scam Alerts</h2>
+              <div class="logs">
+                <p class="log-head">Messages flagged as risky by Gemini.</p>
+                <ul id="scamList" class="log-list"></ul>
+              </div>
+            </article>
+
+            <article class="card">
+              <h2>Safe Messages</h2>
+              <div class="logs">
+                <p class="log-head">Messages considered low risk.</p>
+                <ul id="safeList" class="log-list"></ul>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const qrImage = document.getElementById("qrImage");
+      const qrPlaceholder = document.getElementById("qrPlaceholder");
+      const statusText = document.getElementById("statusText");
+      const statusPill = document.getElementById("statusPill");
+      const scamList = document.getElementById("scamList");
+      const safeList = document.getElementById("safeList");
+      const messageCounters = document.getElementById("messageCounters");
+      const totalCountNode = document.getElementById("totalCount");
+      const scamRateNode = document.getElementById("scamRate");
+      const avgRiskNode = document.getElementById("avgRisk");
+      const liveDot = document.getElementById("liveDot");
+
+      let scamCount = 0;
+      let safeCount = 0;
+      let totalCount = 0;
+      let riskSum = 0;
+      const seenMessageIds = new Set();
+
+      function riskClass(score) {
+        if (score >= 70) return "high";
+        if (score >= 35) return "medium";
+        return "low";
+      }
+
+      function escapeText(text) {
+        const div = document.createElement("div");
+        div.textContent = text || "";
+        return div.textContent;
+      }
+
+      function getDisplayReason(reasonText) {
+        const value = String(reasonText || "").trim();
+        if (!value) return "AI checked only";
+        const fallbackMarker = "Fallback:";
+        const markerIndex = value.indexOf(fallbackMarker);
+        if (markerIndex >= 0) {
+          return value.slice(markerIndex + fallbackMarker.length).trim() || "AI checked only";
+        }
+        if (value.toLowerCase().includes("gemini unavailable")) {
+          return "AI checked only";
+        }
+        return value;
+      }
+
+      function updateCounters() {
+        messageCounters.textContent = `Scams: ${scamCount} | Safe: ${safeCount}`;
+        totalCountNode.textContent = String(totalCount);
+        scamRateNode.textContent = totalCount > 0
+          ? `${Math.round((scamCount / totalCount) * 100)}%`
+          : "0%";
+        avgRiskNode.textContent = totalCount > 0
+          ? String(Math.round(riskSum / totalCount))
+          : "0";
+      }
+
+      socket.on("qr", (qrDataUrl) => {
+        qrImage.src = qrDataUrl;
+        qrImage.style.display = "block";
+        qrPlaceholder.style.display = "none";
+      });
+
+      socket.on("status", (payload) => {
+        const connected = Boolean(payload && payload.connected);
+        const text = (payload && payload.text) || (connected ? "Protected / Connected" : "Waiting for QR...");
+
+        statusText.textContent = text;
+        statusPill.textContent = connected ? "Protected" : "Not Connected";
+        statusPill.className = "pill " + (connected ? "online" : "offline");
+        liveDot.style.opacity = connected ? "1" : "0.3";
+
+        if (connected) {
+          qrImage.style.display = "none";
+          qrPlaceholder.style.display = "block";
+          qrPlaceholder.textContent = "Connected. Bodyguard is actively monitoring chats.";
+        }
+      });
+
+      socket.on("disconnect", () => {
+        statusText.textContent = "Dashboard disconnected. Reconnecting...";
+        statusPill.textContent = "Not Connected";
+        statusPill.className = "pill offline";
+        liveDot.style.opacity = "0.3";
+      });
+
+      socket.on("connect", () => {
+        statusText.textContent = "Reconnected. Syncing status...";
+      });
+
+      socket.on("securityLog", (log) => {
+        const eventId = log.messageId || `${log.from}|${log.timestamp}|${log.message}`;
+        if (seenMessageIds.has(eventId)) {
+          return;
+        }
+        seenMessageIds.add(eventId);
+
+        const li = document.createElement("li");
+        li.className = "log-item " + (log.isScam ? "scam" : "safe");
+
+        const score = Number(log.riskScore) || 0;
+        const level = riskClass(score);
+
+        li.innerHTML = `
+          <div class="line1">
+            <span>${escapeText(log.from)} • ${new Date(log.timestamp).toLocaleTimeString()}</span>
+            <span class="risk ${level}">Risk ${score}/100</span>
+          </div>
+          <p class="msg">${escapeText(log.message)}</p>
+          <p class="reason">${escapeText(getDisplayReason(log.reason))}</p>
+          <p class="source">Model: ${escapeText(log.modelUsed || "unknown")}</p>
+        `;
+
+        const targetList = log.isScam ? scamList : safeList;
+        targetList.prepend(li);
+
+        if (log.isScam) {
+          scamCount += 1;
+        } else {
+          safeCount += 1;
+        }
+
+        totalCount += 1;
+        riskSum += score;
+
+        updateCounters();
+
+        while (targetList.children.length > 100) {
+          targetList.removeChild(targetList.lastChild);
+        }
+
+        if (seenMessageIds.size > 500) {
+          seenMessageIds.clear();
+        }
+      });
+
+      updateCounters();
+    </script>
+  </body>
+</html>
