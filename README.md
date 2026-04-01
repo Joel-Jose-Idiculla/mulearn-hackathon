@@ -91,6 +91,9 @@ Screenshots demonstrating Google Gemini integration are provided in the `/proof`
 - **Auto-Reply**: System has automatically replied to scammers with safety warnings
 - **Self-Alert**: User received WhatsApp message about detected threats
 
+**Demo video**
+https://drive.google.com/drive/folders/17eSW4Q34tTUWx01nFhw6ZpmM6C1OIqoN?usp=sharing
+
 ### Installation Steps
 
 ```bash
