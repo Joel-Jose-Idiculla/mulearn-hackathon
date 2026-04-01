@@ -92,6 +92,7 @@ Screenshots demonstrating Google Gemini integration are provided in the `/proof`
 - **Self-Alert**: User received WhatsApp message about detected threats
 
 **Demo video**
+-3 images of whatsapp alerts and one demo video
 https://drive.google.com/drive/folders/17eSW4Q34tTUWx01nFhw6ZpmM6C1OIqoN?usp=sharing
 
 ### Installation Steps
